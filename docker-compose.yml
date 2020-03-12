@@ -1,0 +1,13 @@
+version: '2'
+services:
+  scrapy:
+    container_name: scrapy
+    build: .
+    volumes:
+      - ./.:/usr/src/app
+  splash:
+    container_name: splash
+    image: scrapinghub/splash
+    ports:
+      - 8050:8050
+      - 5023:5023

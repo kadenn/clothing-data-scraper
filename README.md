@@ -1,5 +1,5 @@
 # clothing-data-scraper
-An example web-spider written in Python and using scrapy-splash.
+An example web-spider written in Python using scrapy-splash.
 
 ## How to test this?
 

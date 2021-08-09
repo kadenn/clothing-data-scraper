@@ -5,50 +5,25 @@ from scrapy_splash import SplashRequest
 import logging
 
 
-class LCWProductUriCrawler(scrapy.Spider):
-    name = 'lcw_product_uri_crawler'
-
-    script = """
-  	function main(splash)
-	  splash.private_mode_enabled = false
-	  
-	  local url = splash.args.url
-	  assert(splash:go(url))
-	  assert(splash:wait(2.0))
-
-          local element=splash:select('#divModels > div:nth-child(6) > div.col-sm-12.col-md-10 > div.paging-process > a')
-	  if element then 
-	    assert(element:mouse_click()) 
-	  end  
-
-	  assert(splash:wait(2.0))
-
-	  local prod_len = 420
-	  local get_body_height = splash:jsfunc("function() {return document.body.scrollHeight;}")
-	  local scroll_num = (get_body_height()/prod_len)
-	  for i=1,scroll_num do
-	    splash.scroll_position = {y=prod_len*i} 
-      assert(splash:wait(1.0))
-	  end
-
-	  return {
-	    html = splash:html(),
-	  }
-	end
-            """
-    start_urls = ["https://www.lcwaikiki.com/tr-TR/TR/etiket/kadin-cok-satanlar",
-                  "https://www.lcwaikiki.com/tr-TR/TR/etiket/erkek-cok-satanlar",
-                  "https://www.lcwaikiki.com/tr-TR/TR/etiket/kiz-cocuk-cok-satanlar"]
+class DerimodProductCrawler(scrapy.Spider):
+    name = 'derimod_product_crawler'
+    start_urls = ['https://www.derimod.com.tr/kadin-tum-ayakkabilar/', 'https://www.derimod.com.tr/erkek-tum-ayakkabilar/',
+                  'https://www.derimod.com.tr/kadin-deri-ceket/', 'https://www.derimod.com.tr/erkek-deri-ceket/']
 
     def start_requests(self):
         logging.info('Waiting for responses...')
         for url in self.start_urls:
-            yield SplashRequest(url=url.strip(), callback=self.parse, endpoint='execute',
-                                args={'lua_source': self.script, 'timeout': 90})
+            yield SplashRequest(url, self.parse, args={'wait': 1.0})
 
     def parse(self, response):
         html = BeautifulSoup(response.text, 'html.parser')
-        urun_list = html.find_all("a", attrs={"data-tracking-category": "UrunDetay"})
-        logging.info('Found {} Products:'.format(len(urun_list)))
-        for urun in urun_list:
-            logging.info("Product-Uri: https://www.lcwaikiki.com/{}".format(urun["href"]))
+        prod_list = html.find_all("div", attrs={
+                                  "class": "col-sm-4 col-xs-6 padding-lg list-content-product-item list__content--margin"})
+        logging.info('Found {} Products:'.format(len(prod_list)))
+        for prod in prod_list:
+            logging.info(
+                "Product Uri: https://www.derimod.com.tr{}".format(prod.select('div > div.img-wrapper.js-equal-height > div > a')[0].get('href')))
+            logging.info("Product Name: {}".format(prod.select(
+                'div > div.product-list-bottom-content > span.product-name')[0].get_text()))
+            logging.info("Product Price: {}".format(prod.select(
+                'div > div.product-list-bottom-content > span.product-price.line-through')[0].get_text()))

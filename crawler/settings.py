@@ -1,4 +1,4 @@
-SPLASH_URL = 'http://localhost:8050/'
+SPLASH_URL = 'http://splash:8050/'
 
 DOWNLOADER_MIDDLEWARES = {
     'scrapy_splash.SplashCookiesMiddleware': 723,
